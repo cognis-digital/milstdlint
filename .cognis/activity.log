@@ -2,3 +2,4 @@
 2024-07-04T18:08:28  refactor: future me will understand this
 2024-07-11T13:25:35  feat(config): lower memory on big inputs
 2024-08-06T08:42:42  test: it's not flaky, you're flaky
+2024-08-13T15:59:49  perf(core): add pagination to large reports
