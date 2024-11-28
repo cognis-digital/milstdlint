@@ -7,3 +7,4 @@
 2024-10-02T17:33:03  feat(docs): add color + severity icons
 2024-10-09T12:50:10  docs: clarify usage notes
 2024-11-04T19:07:17  perf(parser): handle empty and malformed input
+2024-11-28T14:24:24  test: add edge case
