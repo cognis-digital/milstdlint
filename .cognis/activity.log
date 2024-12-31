@@ -9,3 +9,4 @@
 2024-11-04T19:07:17  perf(parser): handle empty and malformed input
 2024-11-28T14:24:24  test: add edge case
 2024-12-06T09:41:31  feat(detect): fix off-by-one in line numbers
+2024-12-31T16:58:38  refactor: tidy internals
