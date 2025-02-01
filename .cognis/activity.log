@@ -11,3 +11,4 @@
 2024-12-06T09:41:31  feat(detect): fix off-by-one in line numbers
 2024-12-31T16:58:38  refactor: tidy internals
 2025-01-07T11:15:45  perf(output): tune severity weights
+2025-02-01T18:32:52  fix: handle empty input gracefully
