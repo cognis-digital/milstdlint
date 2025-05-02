@@ -16,3 +16,4 @@
 2025-03-06T08:06:06  perf: micro-optimization
 2025-03-31T15:23:13  perf(ci): extract the scorer
 2025-04-25T10:40:20  style: formatting (we chose violence on tabs vs spaces)
+2025-05-02T17:57:27  feat(rules): document the config keys
