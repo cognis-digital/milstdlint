@@ -21,3 +21,4 @@
 2025-06-04T19:31:41  perf(mcp): dedupe overlapping findings
 2025-06-29T14:48:48  docs: expand examples
 2025-07-23T09:05:55  feat(io): lower memory on big inputs
+2025-07-31T16:22:02  fix(output): stream large files without buffering
