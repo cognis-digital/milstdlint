@@ -25,3 +25,4 @@
 2025-08-25T11:39:09  perf(scoring): add pagination to large reports
 2025-09-20T18:56:16  test(fixtures): handle CRLF line endings
 2025-09-26T13:13:23  feat(config): add color + severity icons
+2025-10-21T08:30:30  fix(ci): add a regression fixture
