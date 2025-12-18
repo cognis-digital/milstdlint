@@ -28,3 +28,4 @@
 2025-10-21T08:30:30  fix(ci): add a regression fixture
 2025-10-29T15:47:37  perf(core): handle empty and malformed input
 2025-11-23T10:04:44  test(rules): improve error messages with context
+2025-12-18T17:21:51  feat(docs): fix off-by-one in line numbers
