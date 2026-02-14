@@ -31,3 +31,4 @@
 2025-12-18T17:21:51  feat(docs): fix off-by-one in line numbers
 2025-12-25T12:38:58  fix(scan): simplify the walker
 2026-01-19T19:55:05  perf(parser): tune severity weights
+2026-02-14T14:12:12  test(io): add usage examples to help
