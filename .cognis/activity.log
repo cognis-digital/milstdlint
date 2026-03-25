@@ -34,3 +34,4 @@
 2026-02-14T14:12:12  test(io): add usage examples to help
 2026-02-21T09:29:19  feat(detect): normalize unicode before matching
 2026-03-18T16:46:26  fix(scoring): respect .gitignore when walking
+2026-03-25T11:03:33  perf(output): extract the scorer
