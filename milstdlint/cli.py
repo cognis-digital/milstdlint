@@ -17,7 +17,7 @@ import sys
 from typing import List, Optional
 
 from . import TOOL_NAME, TOOL_VERSION
-from .core import lint_file, LintResult, Severity
+from .core import lint_file, LintResult
 
 
 def _render_table(results: List[LintResult]) -> str:

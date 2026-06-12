@@ -16,7 +16,7 @@
 </div>
 
 ```bash
-pip install cognis-milstdlint
+pip install "git+https://github.com/cognis-digital/milstdlint.git"
 milstdlint scan .            # → prioritized findings in seconds
 ```
 
@@ -47,7 +47,7 @@ Lint documents against MIL-STD / DoD formatting and classification-marking rules
 ## Quick start
 
 ```bash
-pip install cognis-milstdlint
+pip install "git+https://github.com/cognis-digital/milstdlint.git"
 milstdlint --version
 milstdlint scan .                       # scan current project
 milstdlint scan . --format json         # machine-readable

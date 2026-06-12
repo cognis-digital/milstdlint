@@ -9,7 +9,6 @@ from milstdlint import (
     TOOL_NAME,
     TOOL_VERSION,
     lint_text,
-    Severity,
     CLASSIFICATION_LEVELS,
 )
 from milstdlint.cli import main, _render_json
