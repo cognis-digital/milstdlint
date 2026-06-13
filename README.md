@@ -20,6 +20,34 @@ pip install cognis-milstdlint
 milstdlint scan .            # → prioritized findings in seconds
 ```
 
+## Usage — step by step
+
+`milstdlint` statically lints documents against MIL-STD / DoD formatting and
+classification-marking rules. Console script: `milstdlint`.
+
+1. **Install** from a clone:
+   ```bash
+   pip install -e .
+   ```
+2. **Lint one or more files** — exits non-zero on any ERROR-severity finding:
+   ```bash
+   milstdlint lint report.txt annex.txt
+   ```
+3. **Tighten the gate** — promote formatting warnings to errors with `--strict`:
+   ```bash
+   milstdlint lint --strict report.txt
+   ```
+4. **Read the output** — `--format json` emits per-file findings plus a summary:
+   ```bash
+   milstdlint lint report.txt --format json | jq '.summary'
+   ```
+   `summary.failed` / `summary.total_errors` tell you what to fix.
+5. **Automate in CI** — block merges that break marking rules:
+   ```yaml
+   - run: pip install -e .
+   - run: milstdlint lint docs/**/*.txt --strict
+   ```
+
 ## Contents
 
 - [Why milstdlint?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
