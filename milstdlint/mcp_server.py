@@ -1,6 +1,10 @@
-"""MILSTDLINT MCP server — exposes scan() as an MCP tool for Cognis.Studio."""
+"""MILSTDLINT MCP server — exposes lint_file() as an MCP tool for Cognis.Studio."""
 from __future__ import annotations
-from milstdlint.core import scan, to_json
+
+import json
+
+from milstdlint.core import lint_file
+
 
 def serve() -> int:
     """Start an MCP stdio server. Requires the optional 'mcp' extra:
@@ -15,8 +19,15 @@ def serve() -> int:
 
     @app.tool()
     def milstdlint_scan(target: str) -> str:
-        """Lint documents against MIL-STD / DoD formatting and classification-marking rules.. Returns JSON findings."""
-        return to_json(scan(target))
+        """Lint a document against MIL-STD / DoD formatting and
+        classification-marking rules. Returns JSON findings."""
+        if not target or not target.strip():
+            return json.dumps({"error": "target path must not be empty"})
+        try:
+            result = lint_file(target)
+        except (OSError, ValueError) as exc:
+            return json.dumps({"error": str(exc)})
+        return json.dumps(result.to_dict())
 
     app.run()
     return 0

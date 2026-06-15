@@ -130,10 +130,13 @@ def _banner_level_of_line(line: str) -> Optional[str]:
 
 
 def _highest(levels: List[str]) -> Optional[str]:
-    ranked = [(_level_rank(l), l) for l in levels if _level_rank(l) >= 0]
+    ranked = [(_level_rank(lvl), lvl) for lvl in levels if _level_rank(lvl) >= 0]
     if not ranked:
         return None
     return max(ranked, key=lambda t: t[0])[1]
+
+
+MAX_FILE_BYTES = 10 * 1024 * 1024  # 10 MiB — refuse to lint absurdly large files
 
 
 def lint_text(text: str, path: str = "<text>", strict: bool = False) -> LintResult:
@@ -141,7 +144,26 @@ def lint_text(text: str, path: str = "<text>", strict: bool = False) -> LintResu
 
     If ``strict`` is True, formatting WARNINGs are promoted to ERRORs so that
     they affect the exit status.
+
+    Raises ``TypeError`` if *text* is not a ``str``.
     """
+    if not isinstance(text, str):
+        raise TypeError(f"lint_text: expected str, got {type(text).__name__!r}")
+    if len(text) > MAX_FILE_BYTES:
+        raise ValueError(
+            f"{path}: file too large ({len(text):,} bytes); "
+            f"limit is {MAX_FILE_BYTES:,} bytes"
+        )
+    if not text.strip():
+        # Empty or whitespace-only document: no banner, nothing to check.
+        result = LintResult(path=path)
+        result.findings.append(Finding(
+            rule="BANNER-MISSING",
+            severity=Severity.ERROR,
+            line=0,
+            message="Document is empty; no content to evaluate.",
+        ))
+        return result
     lines = text.splitlines()
     result = LintResult(path=path)
 
@@ -199,7 +221,9 @@ def lint_text(text: str, path: str = "<text>", strict: bool = False) -> LintResu
         ))
     else:
         # Top banner should be among the first non-blank lines.
-        first_nonblank = next((i for i, l in enumerate(lines, start=1) if l.strip()), None)
+        first_nonblank = next(
+            (i for i, ln in enumerate(lines, start=1) if ln.strip()), None
+        )
         if first_banner_line is not None and first_nonblank is not None and first_banner_line != first_nonblank:
             result.findings.append(Finding(
                 rule="BANNER-TOP",
@@ -274,8 +298,8 @@ def lint_text(text: str, path: str = "<text>", strict: bool = False) -> LintResu
             ))
 
     # --- RULE: MIL-STD-963 front matter ---------------------------------
-    has_id = any(_FRONT_MATTER_ID_RE.match(l) for l in lines)
-    has_date = any(_FRONT_MATTER_DATE_RE.match(l) for l in lines)
+    has_id = any(_FRONT_MATTER_ID_RE.match(ln) for ln in lines)
+    has_date = any(_FRONT_MATTER_DATE_RE.match(ln) for ln in lines)
     if not has_id:
         result.findings.append(Finding(
             rule="FRONTMATTER-ID",
@@ -326,6 +350,24 @@ def lint_text(text: str, path: str = "<text>", strict: bool = False) -> LintResu
 
 
 def lint_file(path: str, strict: bool = False) -> LintResult:
+    """Read *path* from disk and lint it.
+
+    Re-raises ``OSError`` (including ``FileNotFoundError`` /
+    ``PermissionError``) so the caller can surface a clean error message.
+    Raises ``ValueError`` if the file exceeds *MAX_FILE_BYTES*.
+    """
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
-        text = fh.read()
+        # Read in bounded chunks to catch oversized files without loading
+        # the entire thing into memory first.
+        chunks: list[str] = []
+        total = 0
+        for chunk in iter(lambda: fh.read(65536), ""):
+            total += len(chunk.encode("utf-8", errors="replace"))
+            if total > MAX_FILE_BYTES:
+                raise ValueError(
+                    f"{path}: file too large (>{MAX_FILE_BYTES:,} bytes); "
+                    "lint aborted"
+                )
+            chunks.append(chunk)
+        text = "".join(chunks)
     return lint_text(text, path=path, strict=strict)

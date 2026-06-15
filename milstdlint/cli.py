@@ -93,14 +93,34 @@ def main(argv: Optional[List[str]] = None) -> int:
     for path in args.files:
         try:
             results.append(lint_file(path, strict=args.strict))
+        except FileNotFoundError:
+            print(f"{TOOL_NAME}: file not found: {path}", file=sys.stderr)
+            return 2
+        except PermissionError as exc:
+            print(f"{TOOL_NAME}: permission denied: {path}: {exc}", file=sys.stderr)
+            return 2
         except OSError as exc:
             print(f"{TOOL_NAME}: cannot read {path}: {exc}", file=sys.stderr)
             return 2
+        except ValueError as exc:
+            # e.g. file too large
+            print(f"{TOOL_NAME}: {exc}", file=sys.stderr)
+            return 2
 
-    if args.format == "json":
-        print(_render_json(results))
-    else:
-        print(_render_table(results))
+    if not results:
+        # Defensive: argparse nargs="+" guarantees at least one file, but
+        # guard against programmatic callers passing an empty list.
+        print(f"{TOOL_NAME}: no files to lint", file=sys.stderr)
+        return 2
+
+    try:
+        if args.format == "json":
+            print(_render_json(results))
+        else:
+            print(_render_table(results))
+    except (OSError, BrokenPipeError) as exc:
+        print(f"{TOOL_NAME}: output error: {exc}", file=sys.stderr)
+        return 2
 
     failed = any(not r.ok for r in results)
     return 1 if failed else 0
