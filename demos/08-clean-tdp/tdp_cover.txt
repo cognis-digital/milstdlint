@@ -1,0 +1,13 @@
+SECRET
+Document ID: TDP-2026-0301-REVA
+Date: 2026-02-14
+
+(U) SUBJECT: Technical data package cover sheet (sample / training only).
+
+(U) This cover sheet introduces the package and is unclassified on its own.
+
+(C) Tolerance tables in Section 3 are CONFIDENTIAL when aggregated.
+
+(S) The integrated test results in Section 5 are SECRET, setting the banner.
+
+SECRET

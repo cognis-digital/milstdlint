@@ -1,0 +1,12 @@
+SECRET
+Document ID: OPORD-2026-0506
+
+(U) SUBJECT: Operations order excerpt (sample / training only).
+
+(S) A SECRET paragraph consistent with the top banner.
+
+This coordinating instruction line is missing its portion marking.
+
+(S) Another properly marked SECRET paragraph follows.
+
+SECRET

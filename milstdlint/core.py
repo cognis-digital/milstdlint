@@ -329,3 +329,98 @@ def lint_file(path: str, strict: bool = False) -> LintResult:
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         text = fh.read()
     return lint_text(text, path=path, strict=strict)
+
+
+# --- SARIF 2.1.0 export ---------------------------------------------------
+# SARIF (OASIS Static Analysis Results Interchange Format) lets milstdlint
+# findings flow into GitHub code scanning, Azure DevOps, and any SARIF viewer.
+
+_SARIF_LEVEL = {
+    Severity.ERROR: "error",
+    Severity.WARNING: "warning",
+    Severity.INFO: "note",
+}
+
+# Short, human-readable descriptions for each rule milstdlint can emit. Used to
+# populate the SARIF `rules` (driver.rules) catalog so viewers can show help.
+RULE_DESCRIPTIONS = {
+    "BANNER-MISSING": "No overall classification banner found at top and bottom.",
+    "BANNER-TOP": "First content line is not the classification banner.",
+    "BANNER-BOTTOM": "Classification banner is missing from the bottom of the document.",
+    "BANNER-MISMATCH": "Top and bottom banner markings disagree.",
+    "BANNER-PORTION-MISMATCH": "Overall banner does not match the highest portion marking.",
+    "PORTION-MISSING": "Paragraph is missing a required portion marking.",
+    "PORTION-UNKNOWN": "Unrecognized portion-marking token.",
+    "FRONTMATTER-ID": "Missing document identifier front matter.",
+    "FRONTMATTER-DATE": "Missing document date front matter.",
+    "FORMAT-TAB": "Tab character found; MIL-STD layout uses spaces.",
+    "FORMAT-TRAILING-WS": "Trailing whitespace.",
+    "FORMAT-LINE-LENGTH": f"Line exceeds {MAX_LINE_LEN} characters.",
+}
+
+
+def to_sarif(results: List[LintResult], tool_name: str = "milstdlint",
+             tool_version: str = "0.0.0") -> dict:
+    """Render lint results as a SARIF 2.1.0 log (returns a JSON-able dict).
+
+    One SARIF run is produced. Each Finding becomes a SARIF `result`; rules are
+    collected into the driver `rules` catalog with stable ``MIL-<RULE>`` ids.
+    """
+    # Collect the set of rules actually triggered, preserving a stable order.
+    seen_rules: List[str] = []
+    for res in results:
+        for f in res.findings:
+            if f.rule not in seen_rules:
+                seen_rules.append(f.rule)
+
+    rule_index = {rule: i for i, rule in enumerate(seen_rules)}
+    rules = [
+        {
+            "id": rule,
+            "name": rule.replace("-", ""),
+            "shortDescription": {
+                "text": RULE_DESCRIPTIONS.get(rule, rule),
+            },
+            "defaultConfiguration": {"level": "warning"},
+        }
+        for rule in seen_rules
+    ]
+
+    sarif_results = []
+    for res in results:
+        for f in res.findings:
+            location = {
+                "physicalLocation": {
+                    "artifactLocation": {"uri": res.path},
+                }
+            }
+            if f.line and f.line > 0:
+                location["physicalLocation"]["region"] = {"startLine": f.line}
+            entry = {
+                "ruleId": f.rule,
+                "ruleIndex": rule_index[f.rule],
+                "level": _SARIF_LEVEL.get(f.severity, "warning"),
+                "message": {"text": f.message},
+                "locations": [location],
+            }
+            if f.excerpt:
+                entry["message"]["text"] = f"{f.message} (excerpt: {f.excerpt})"
+            sarif_results.append(entry)
+
+    return {
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": tool_name,
+                        "version": tool_version,
+                        "informationUri": "https://github.com/cognis-digital/milstdlint",
+                        "rules": rules,
+                    }
+                },
+                "results": sarif_results,
+            }
+        ],
+    }

@@ -1,0 +1,11 @@
+SECRET
+Document ID: INTSUM-2026-0177
+Date: 2026-06-01
+
+(U) SUBJECT: Intelligence summary marking review (sample / training only).
+
+(S) Routine paragraph consistent with the SECRET banner at top and bottom.
+
+(TS) This paragraph carries a TOP SECRET portion mark, exceeding the banner.
+
+SECRET

@@ -1,0 +1,13 @@
+CUI
+Document ID: ICD-2026-0142
+Date: 2026-04-18
+
+(CUI) SUBJECT: Ground Station Interface Control Document (sample / training only).
+
+(U) This ICD describes message framing between segments; no operational data.
+
+(CUI) The controlled message dictionary in Appendix B is Controlled Unclassified Info.
+
+(U) Distribution authorized to program participants; illustrative sample only.
+
+CUI

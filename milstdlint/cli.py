@@ -17,7 +17,7 @@ import sys
 from typing import List, Optional
 
 from . import TOOL_NAME, TOOL_VERSION
-from .core import lint_file, LintResult, Severity
+from .core import lint_file, LintResult, Severity, to_sarif
 
 
 def _render_table(results: List[LintResult]) -> str:
@@ -56,6 +56,13 @@ def _render_json(results: List[LintResult]) -> str:
     return json.dumps(payload, indent=2)
 
 
+def _render_sarif(results: List[LintResult]) -> str:
+    return json.dumps(
+        to_sarif(results, tool_name=TOOL_NAME, tool_version=TOOL_VERSION),
+        indent=2,
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog=TOOL_NAME,
@@ -71,8 +78,9 @@ def build_parser() -> argparse.ArgumentParser:
     lint = sub.add_parser("lint", help="Lint one or more document files.")
     lint.add_argument("files", nargs="+", help="Document file(s) to lint.")
     lint.add_argument(
-        "--format", choices=["table", "json"], default="table",
-        help="Output format (default: table).",
+        "--format", choices=["table", "json", "sarif"], default="table",
+        help="Output format (default: table). 'sarif' emits SARIF 2.1.0 for "
+             "GitHub code scanning and SARIF viewers.",
     )
     lint.add_argument(
         "--strict", action="store_true",
@@ -99,6 +107,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.format == "json":
         print(_render_json(results))
+    elif args.format == "sarif":
+        print(_render_sarif(results))
     else:
         print(_render_table(results))
 

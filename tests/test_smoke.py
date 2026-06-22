@@ -12,7 +12,26 @@ from milstdlint import (
     Severity,
     CLASSIFICATION_LEVELS,
 )
-from milstdlint.cli import main, _render_json
+from milstdlint.core import to_sarif, lint_file
+from milstdlint.cli import main, _render_json, _render_sarif
+
+_DEMOS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "demos"
+)
+
+# Expected outcome per demo input file: (relative path, should_pass).
+_DEMO_EXPECTATIONS = {
+    "01-basic/sample_secret_memo.txt": False,
+    "02-clean/clean_unclassified.txt": True,
+    "03-mixed/oporder_mixed.txt": False,
+    "04-cui-spec/cui_interface_spec.txt": True,
+    "05-nofile-banner/draft_no_banner.txt": False,
+    "06-line-length-tab/tm_formatting.txt": True,   # warnings only by default
+    "07-portion-mismatch-ts/intsum_undermarked.txt": False,
+    "08-clean-tdp/tdp_cover.txt": True,
+    "09-unknown-token/memo_bad_token.txt": True,     # PORTION-UNKNOWN is a warning
+    "10-sarif-ci/release_gate.txt": False,
+}
 
 
 GOOD_DOC = "\n".join([
@@ -111,6 +130,57 @@ class TestJsonAndCli(unittest.TestCase):
     def test_no_command_returns_usage(self):
         self.assertEqual(main([]), 2)
 
+
+class TestSarif(unittest.TestCase):
+    def test_sarif_structure_and_schema(self):
+        res = lint_text(UNDER_MARKED_DOC, path="under.txt")
+        log = to_sarif([res], tool_name=TOOL_NAME, tool_version=TOOL_VERSION)
+        self.assertEqual(log["version"], "2.1.0")
+        self.assertIn("sarif-2.1.0", log["$schema"])
+        run = log["runs"][0]
+        self.assertEqual(run["tool"]["driver"]["name"], TOOL_NAME)
+        self.assertEqual(run["tool"]["driver"]["version"], TOOL_VERSION)
+        # At least one result, and every result references a catalogued rule.
+        self.assertTrue(run["results"])
+        rule_ids = {r["id"] for r in run["tool"]["driver"]["rules"]}
+        for r in run["results"]:
+            self.assertIn(r["ruleId"], rule_ids)
+            self.assertIn(r["level"], ("error", "warning", "note"))
+            self.assertEqual(
+                r["ruleIndex"],
+                next(i for i, rr in enumerate(run["tool"]["driver"]["rules"])
+                     if rr["id"] == r["ruleId"]),
+            )
+
+    def test_sarif_levels_map_correctly(self):
+        # A doc with both an error (BANNER-MISSING) and a warning (frontmatter).
+        res = lint_text("(U) lone paragraph with no banner.", path="x.txt")
+        run = to_sarif([res])["runs"][0]
+        levels = {r["ruleId"]: r["level"] for r in run["results"]}
+        self.assertEqual(levels.get("BANNER-MISSING"), "error")
+
+    def test_sarif_line_region(self):
+        doc = "SECRET\n\n(S) marked.\nunmarked line.\n\nSECRET"
+        run = to_sarif([lint_text(doc, path="d.txt")])["runs"][0]
+        pm = next(r for r in run["results"] if r["ruleId"] == "PORTION-MISSING")
+        self.assertEqual(
+            pm["locations"][0]["physicalLocation"]["region"]["startLine"], 4
+        )
+
+    def test_cli_sarif_renderer_is_valid_json(self):
+        res = lint_text(UNDER_MARKED_DOC, path="u.txt")
+        payload = json.loads(_render_sarif([res]))
+        self.assertEqual(payload["version"], "2.1.0")
+
+    def test_cli_sarif_format_runs(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            bad = os.path.join(d, "bad.txt")
+            with open(bad, "w", encoding="utf-8") as fh:
+                fh.write(UNDER_MARKED_DOC)
+            # Errors still drive the exit code regardless of output format.
+            self.assertEqual(main(["lint", bad, "--format", "sarif"]), 1)
+
     def test_module_runs_as_subprocess(self):
         # Verify python -m milstdlint --version works end to end.
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -120,6 +190,27 @@ class TestJsonAndCli(unittest.TestCase):
         )
         self.assertEqual(proc.returncode, 0)
         self.assertIn(TOOL_VERSION, proc.stdout)
+
+
+class TestDemos(unittest.TestCase):
+    def test_demo_files_exist_and_match_expected_outcome(self):
+        for rel, should_pass in _DEMO_EXPECTATIONS.items():
+            path = os.path.join(_DEMOS_DIR, *rel.split("/"))
+            self.assertTrue(os.path.isfile(path), f"missing demo input: {rel}")
+            res = lint_file(path)
+            self.assertEqual(
+                res.ok, should_pass,
+                msg=f"{rel}: expected ok={should_pass}; findings="
+                    f"{[f.to_dict() for f in res.findings]}",
+            )
+
+    def test_every_demo_has_scenario(self):
+        for rel in _DEMO_EXPECTATIONS:
+            demo_dir = os.path.dirname(os.path.join(_DEMOS_DIR, *rel.split("/")))
+            self.assertTrue(
+                os.path.isfile(os.path.join(demo_dir, "SCENARIO.md")),
+                f"{demo_dir} missing SCENARIO.md",
+            )
 
 
 if __name__ == "__main__":

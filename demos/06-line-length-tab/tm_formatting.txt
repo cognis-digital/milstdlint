@@ -1,0 +1,11 @@
+UNCLASSIFIED
+Document ID: TM-2026-0451
+Date: 2026-03-11
+
+(U) SUBJECT: Technical manual formatting check (sample / training only).
+
+(U)	This paragraph begins with a tab character instead of spaces, which violates MIL-STD layout guidance.
+
+(U) This line is intentionally written to exceed the one hundred character maximum line length so the FORMAT-LINE-LENGTH rule fires here.
+
+UNCLASSIFIED

@@ -1,0 +1,12 @@
+CONFIDENTIAL
+Document ID: REL-2026-0512
+
+(U) SUBJECT: Release-gate sample with multiple defects (sample / training only).
+
+(C) A correctly marked confidential paragraph.
+
+(S) A SECRET paragraph that under-marks the CONFIDENTIAL banner.
+
+Unmarked paragraph that should be flagged as missing a portion marking.
+
+SECRET

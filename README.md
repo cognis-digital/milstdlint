@@ -42,11 +42,48 @@ classification-marking rules. Console script: `milstdlint`.
    milstdlint lint report.txt --format json | jq '.summary'
    ```
    `summary.failed` / `summary.total_errors` tell you what to fix.
-5. **Automate in CI** — block merges that break marking rules:
+5. **Emit SARIF for code scanning** — `--format sarif` produces a SARIF 2.1.0
+   log that GitHub code scanning (and any SARIF viewer) renders inline:
+   ```bash
+   milstdlint lint docs/*.txt --format sarif > milstdlint.sarif
+   ```
+6. **Automate in CI** — block merges that break marking rules:
    ```yaml
    - run: pip install -e .
    - run: milstdlint lint docs/**/*.txt --strict
    ```
+
+### Output formats
+
+| `--format` | Use it for |
+|---|---|
+| `table` (default) | Human-readable terminal output. |
+| `json` | Piping into agents, `jq`, or compliance pipelines. |
+| `sarif` | GitHub code scanning, Azure DevOps, SARIF viewers (SARIF 2.1.0). |
+
+### Try the demos
+
+The [`demos/`](demos/) directory has ten ready-to-run scenarios, each with a
+realistic marked document and a `SCENARIO.md` (what it contains, what to expect,
+exact command, how to act):
+
+| Demo | Shows |
+|---|---|
+| `01-basic` | Under-marked SECRET memo (multiple errors). |
+| `02-clean` | Clean UNCLASSIFIED baseline (zero findings). |
+| `03-mixed` | Mostly-correct OPORD with two isolated defects. |
+| `04-cui-spec` | Clean CUI interface control document. |
+| `05-nofile-banner` | Missing overall banner (`BANNER-MISSING`). |
+| `06-line-length-tab` | Formatting hygiene + the `--strict` gate. |
+| `07-portion-mismatch-ts` | `(TS)` portion under a SECRET banner (under-marking). |
+| `08-clean-tdp` | Clean multi-level technical data package cover sheet. |
+| `09-unknown-token` | Invalid portion token (`PORTION-UNKNOWN`). |
+| `10-sarif-ci` | SARIF 2.1.0 export for GitHub code scanning. |
+
+```bash
+python -m milstdlint lint demos/07-portion-mismatch-ts/intsum_undermarked.txt
+python -m milstdlint lint demos/10-sarif-ci/release_gate.txt --format sarif
+```
 
 ## Contents
 

@@ -1,0 +1,11 @@
+CONFIDENTIAL
+Document ID: MEMO-2026-0210
+Date: 2026-01-20
+
+(U) SUBJECT: Portion-marking token validation (sample / training only).
+
+(C) A correctly marked CONFIDENTIAL paragraph for contrast.
+
+(XYZ) This paragraph uses an invalid portion token that is not a known level.
+
+CONFIDENTIAL
