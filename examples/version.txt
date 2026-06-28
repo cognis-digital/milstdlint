@@ -1,0 +1,3 @@
+$ milstdlint-emit --version
+
+milstdlint 0.1.0

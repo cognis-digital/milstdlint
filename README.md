@@ -20,6 +20,60 @@ pip install cognis-milstdlint
 milstdlint scan .            # → prioritized findings in seconds
 ```
 
+
+<!-- cognis:example:start -->
+## 🔎 Example output
+
+Real, reproducible output from the tool — runs offline:
+
+```console
+$ milstdlint-emit --version
+milstdlint 0.1.0
+```
+
+```console
+$ milstdlint-emit --help
+usage: milstdlint [-h] [--version] {lint} ...
+
+Lint documents against MIL-STD / DoD formatting and classification-marking
+rules (static analysis only).
+
+positional arguments:
+  {lint}
+    lint      Lint one or more document files.
+
+options:
+  -h, --help  show this help message and exit
+  --version   show program's version number and exit
+```
+
+> Blocks above are real `milstdlint` output — reproduce them from a clone.
+
+**Sample result format** _(illustrative values — run on your own data for real findings):_
+
+```
+{
+"findings": [
+    {
+        "id": "1234567890",
+        "title": "Suspicious Network Activity",
+        "description": "Anomalous network traffic detected from IP 192.168.1.100",
+        "severity": "medium",
+        "created_at": "2023-02-20T14:30:00Z"
+    },
+    {
+        "id": "2345678901",
+        "title": "Potential Malware Infection",
+        "description": "Malicious code detected on host 192.168.1.101",
+        "severity": "high",
+        "created_at": "2023-02-20T14:31:00Z"
+    }
+]
+}
+```
+
+<!-- cognis:example:end -->
+
 ## Usage — step by step
 
 `milstdlint` statically lints documents against MIL-STD / DoD formatting and

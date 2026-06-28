@@ -1,0 +1,14 @@
+$ milstdlint-emit --help
+
+usage: milstdlint [-h] [--version] {lint} ...
+
+Lint documents against MIL-STD / DoD formatting and classification-marking
+rules (static analysis only).
+
+positional arguments:
+  {lint}
+    lint      Lint one or more document files.
+
+options:
+  -h, --help  show this help message and exit
+  --version   show program's version number and exit
